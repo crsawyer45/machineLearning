@@ -1,25 +1,28 @@
 import numpy as np
 
 class Piece:
-    def __init__(self, position, id):
+    def __init__(self, position, id, colors = None):
         self.id = id
         self.pos = np.array(position)
         self.colors = [None, None, None]
         self.type = ""
-        if(self.pos[0] == -1):
-            self.colors[0] = "R"
-        elif(self.pos[0] == 1):
-            self.colors[0] = "O"
+        if colors == None:
+            if(self.pos[0] == -1):
+                self.colors[0] = "R"
+            elif(self.pos[0] == 1):
+                self.colors[0] = "O"
 
-        if(self.pos[1] == -1):
-            self.colors[1] = "G"
-        elif(self.pos[1] == 1):
-            self.colors[1] = "B"
+            if(self.pos[1] == -1):
+                self.colors[1] = "G"
+            elif(self.pos[1] == 1):
+                self.colors[1] = "B"
 
-        if(self.pos[2] == -1):
-            self.colors[2] = "W"
-        elif(self.pos[2] == 1):
-            self.colors[2] = "Y"
+            if(self.pos[2] == -1):
+                self.colors[2] = "W"
+            elif(self.pos[2] == 1):
+                self.colors[2] = "Y"
+        else:
+            self.colors = colors
 
         if(np.count_nonzero(self.pos != 0) == 3):
             self.type = "corner"

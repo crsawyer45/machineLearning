@@ -18,8 +18,17 @@ def convertStringToList(string):
     return list
 
 def convertStringToTuple(string):
+    string = re.sub(',', '', string)
+    string = re.sub('\(', '', string)
+    string = re.sub('\)', '', string)
+    values = string.split()
+    for i in range(len(values)):
+        values[i] = int(values[i])
+    return tuple(values)
 
 
-lines = readListsFromFile("optimalMovesCross3.json")
-list = convertStringToList(lines[0])
-print(list)
+# lines = readListsFromFile("optimalMovesCross3.json")
+# list = convertStringToList(lines[0])
+# tuple = convertStringToTuple(lines[1])
+# print(list)
+# print(tuple)

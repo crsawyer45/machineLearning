@@ -1,0 +1,8 @@
+maybe make all operations for rotating cube be numpy for speed
+
+ensure that the cross product turns are accurate
+
+constructor that creates a cube with a given cube state from either a vector of pieces or with colors
+if its a vector of pieces, possibly match the colors of the piece to where it is
+this is simple for the coordinate representation...im unsure if the list representation is needed at all
+and things would be easier if it isnt

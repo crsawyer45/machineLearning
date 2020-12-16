@@ -5,45 +5,27 @@ import numpy as np
 from piece import Piece
 
 class Cube:
-#need init where you can pass list of pieces and colors for an initial cube state
-    def __init__(self):
-        self.solved = True
-        self.pieces = []
-        i = 0
-        for x in range(-1,2,1):
-            for y in range(-1,2,1):
-                for z in range(-1,2,1):
-                    if(x == 0 and y == 0 and z == 0):
+    def __init__(self, pieceList = None):
+        if pieceList == None:
+            self.solved = True
+            self.pieces = []
+            i = 0
+            for x in range(-1,2,1):
+                for y in range(-1,2,1):
+                    for z in range(-1,2,1):
+                        if(x == 0 and y == 0 and z == 0):
+                            i += 1
+                            continue
+                        self.pieces.append(Piece([x,y,z], i))
                         i += 1
-                        continue
-                    self.pieces.append(Piece([x,y,z], i))
-                    i += 1
-        # self.back  = ['B','B','B','B','B','B','B','B','B']
-        # self.front = ['G','G','G','G','G','G','G','G','G']
-        # self.right = ['O','O','O','O','O','O','O','O','O']
-        # self.left  = ['R','R','R','R','R','R','R','R','R']
-        # self.downer = ['W','W','W','W','W','W','W','W','W']
-        # self.upper = ['Y','Y','Y','Y','Y','Y','Y','Y','Y']
+        else:
+            self.solved = False
+            self.pieces = pieceList
         self.moves = []
         self.turnOptions = ["B","B'","F","F'","R","R'","L","L'","D","D'","U","U'"]
-        # self.categories = [['B','G','O','R','W','Y'] for i in range(54)]
-        # self.encoder = OneHotEncoder(categories= self.categories)
-#cube faces are numbered as follows:
-# [0 1 2]
-# [7 8 3]
-# [6 5 4]
+
     #turn the back face of the cube
     def __B(self):
-        #rotate face representation
-        # temp = self.back.copy()
-        # for i in range(8):
-        #     self.back[(i + 2) % 8] = temp[i]
-        # temp = self.right.copy()
-        # for i in range(2,5):
-        #     self.right[i] = self.downer[i + 2]
-        #     self.downer[i + 2] = self.left[(i + 4) % 8]
-        #     self.left[(i + 4) % 8] = self.upper[i - 2]
-        #     self.upper[i - 2] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[1] == 1):
@@ -53,16 +35,6 @@ class Cube:
 
     #turn the back face of the cube ccw
     def __Bp(self):
-        #rotate face representation
-        # temp = self.back.copy()
-        # for i in range(8):
-        #     self.back[i] = temp[(i + 2) % 8]
-        # temp = self.right.copy()
-        # for i in range(2,5):
-        #     self.right[i] = self.upper[i - 2]
-        #     self.upper[i - 2] = self.left[(i + 4) % 8]
-        #     self.left[(i + 4) % 8] = self.downer[i + 2]
-        #     self.downer[i + 2] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[1] == 1):
@@ -72,16 +44,6 @@ class Cube:
 
     #turn the front face of the cube
     def __F(self):
-        #rotate face representation
-        # temp = self.front.copy()
-        # for i in range(8):
-        #     self.front[(i + 2) % 8] = temp[i]
-        # temp = self.left.copy()
-        # for i in range(2,5):
-        #     self.left[i] = self.downer[i - 2]
-        #     self.downer[i - 2] = self.right[(i + 4) % 8]
-        #     self.right[(i + 4) % 8] = self.upper[i + 2]
-        #     self.upper[i + 2] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[1] == -1):
@@ -91,16 +53,6 @@ class Cube:
 
     #turn the front face of the cube ccw
     def __Fp(self):
-        #rotate face representation
-        # temp = self.front.copy()
-        # for i in range(8):
-        #     self.front[i] = temp[(i + 2) % 8]
-        # temp = self.left.copy()
-        # for i in range(2,5):
-        #     self.left[i] = self.upper[i + 2]
-        #     self.upper[i + 2] = self.right[(i + 4) % 8]
-        #     self.right[(i + 4) % 8] = self.downer[i - 2]
-        #     self.downer[i - 2] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[1] == 1):
@@ -110,16 +62,6 @@ class Cube:
 
     #turn the right face of the cube cw
     def __R(self):
-        #rotate face representation
-        # temp = self.right.copy()
-        # for i in range(8):
-        #     self.right[(i + 2) % 8] = temp[i]
-        # temp = self.upper.copy()
-        # for i in range(2,5):
-        #     self.upper[i] = self.front[i]
-        #     self.front[i] = self.downer[i]
-        #     self.downer[i] = self.back[(i + 4) % 8]
-        #     self.back[(i + 4) % 8] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[0] == 1):
@@ -129,16 +71,6 @@ class Cube:
 
     #turn the right face of the cube ccw
     def __Rp(self):
-        #rotate face representation
-        # temp = self.right.copy()
-        # for i in range(8):
-        #     self.right[i] = temp[(i + 2) % 8]
-        # temp = self.upper.copy()
-        # for i in range(2,5):
-        #     self.upper[i] = self.back[(i + 4) % 8]
-        #     self.back[(i + 4) % 8] = self.downer[i]
-        #     self.downer[i] = self.front[i]
-        #     self.front[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[0] == 1):
@@ -148,16 +80,6 @@ class Cube:
 
     #turn the left face of the cube
     def __L(self):
-        #rotate face representation
-        # temp = self.left.copy()
-        # for i in range(8):
-        #     self.left[(i + 2) % 8] = temp[i]
-        # temp = self.downer.copy()
-        # for i in [0,6,7]:
-        #     self.downer[i] = self.front[i]
-        #     self.front[i] = self.upper[i]
-        #     self.upper[i] = self.back[(i + 4) % 8]
-        #     self.back[(i + 4) % 8] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[0] == -1):
@@ -167,16 +89,6 @@ class Cube:
 
     #turn the left face of the cube ccw
     def __Lp(self):
-        #rotate face representation
-        # temp = self.left.copy()
-        # for i in range(8):
-        #     self.left[i] = temp[(i + 2) % 8]
-        # temp = self.downer.copy()
-        # for i in [0,6,7]:
-        #     self.downer[i] = self.back[(i + 4) % 8]
-        #     self.back[(i + 4) % 8] = self.upper[i]
-        #     self.upper[i] = self.front[i]
-        #     self.front[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[0] == -1):
@@ -186,16 +98,6 @@ class Cube:
 
     #turn the downer face of the cube
     def __D(self):
-        #rotate face representation
-        # temp = self.downer.copy()
-        # for i in range(8):
-        #     self.downer[(i + 2) % 8] = temp[i]
-        # temp = self.front.copy()
-        # for i in range(4,7):
-        #     self.front[i] = self.left[i]
-        #     self.left[i] = self.back[i]
-        #     self.back[i] = self.right[i]
-        #     self.right[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[2] == -1):
@@ -205,16 +107,6 @@ class Cube:
 
     #turn the downer face of the cube ccw
     def __Dp(self):
-        #rotate face representation
-        # temp = self.downer.copy()
-        # for i in range(8):
-        #     self.downer[i] = temp[(i + 2) % 8]
-        # temp = self.front.copy()
-        # for i in range(4,7):
-        #     self.front[i] = self.right[i]
-        #     self.right[i] = self.back[i]
-        #     self.back[i] = self.left[i]
-        #     self.left[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[2] == -1):
@@ -224,16 +116,6 @@ class Cube:
 
     #turn the upper face of the cube
     def __U(self):
-        #rotate face representation
-        # temp = self.upper.copy()
-        # for i in range(8):
-        #     self.upper[(i + 2) % 8] = temp[i]
-        # temp = self.left.copy()
-        # for i in range(3):
-        #     self.left[i] = self.front[i]
-        #     self.front[i] = self.right[i]
-        #     self.right[i] = self.back[i]
-        #     self.back[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[2] == 1):
@@ -243,16 +125,6 @@ class Cube:
 
     #turn the upper face of the cube ccw
     def __Up(self):
-        #rotate face representation
-        # temp = self.upper.copy()
-        # for i in range(8):
-        #     self.upper[i] = temp[(i + 2) % 8]
-        # temp = self.left.copy()
-        # for i in range(3):
-        #     self.left[i] = self.back[i]
-        #     self.back[i] = self.right[i]
-        #     self.right[i] = self.front[i]
-        #     self.front[i] = temp[i]
         #rotate piece representation
         for piece in self.pieces:
             if(piece.pos[2] == 1):
@@ -262,34 +134,12 @@ class Cube:
 
     #rotate side perspective of cube by 90 deg, way easier in just piece representation
     def rotateRight(self):
-        # temp = self.left.copy()
-        # self.left = self.back
-        # self.back = self.right
-        # self.right = self.front
-        # self.front = temp
-        # temp = self.uppper.copy()
-        # for i in range(8):
-        #     self.upper[i] = temp[(i + 2) % 8]
-        # temp = self.downer.copy()
-        # for i in range(8):
-        #     self.downer[(i + 2) % 8] = temp[i]
         for piece in self.pieces:
             piece.rotate(constants.rotZ, "z")
         return
 
     #rotate side perspective of cube by -90 deg, way easier in just piece representation
     def rotateLeft(self):
-        # temp = self.left.copy()
-        # self.left = self.front
-        # self.front = self.right
-        # self.right = self.back
-        # self.back = temp
-        # temp = self.uppper.copy()
-        # for i in range(8):
-        #     self.upper[(i + 2) % 8] = temp[i]
-        # temp = self.downer.copy()
-        # for i in range(8):
-        #     self.downer[i] = temp[(i + 2) % 8]
         for piece in self.pieces:
             piece.rotate(constants.rotZi, "z")
         return
@@ -392,22 +242,62 @@ class Cube:
             random.seed(i)
             seq.append(random.choice(self.turnOptions))
         self.turnCube(seq)
+        return
+
+    # returns the color of a piece at a given position with a given face
+    def getColor(self, x, y, z, face):
+        for piece in self.pieces:
+            if piece.pos[0] == x and piece.pos[1] == y and piece.pos[2] == z:
+                return piece.colors[face]
+
+    # returns the colors of a face in a string...not great but will do for now
+    def getFaceColor(self, x = None, y = None, z = None):
+        str = ""
+        if x == 1:
+            for z in range(1, -2, -1):
+                for y in range(-1, 2, 1):
+                    str += self.getColor(x, y, z, 0)
+                str += '\n'
+
+        elif x == -1:
+            for z in range(1, -2, -1):
+                for y in range(1, -2, -1):
+                    str += self.getColor(x, y, z, 0)
+                str += '\n'
+
+        elif y == 1:
+            for z in range(1, -2, -1):
+                for x in range(1, -2, -1):
+                    str += self.getColor(x, y, z, 1)
+                str += '\n'
+
+        elif y == -1:
+            for z in range(1, -2, -1):
+                for x in range(-1, 2, 1):
+                    str += self.getColor(x, y, z, 1)
+                str += '\n'
+
+        elif z == 1:
+            for y in range(1, -2, -1):
+                for x in range(-1, 2, 1):
+                    str += self.getColor(x, y, z, 2)
+                str += '\n'
+
+        elif z == -1:
+            for y in range(-1, 2, 1):
+                for x in range(-1, 2, 1):
+                    str += self.getColor(x, y, z, 2)
+                str += '\n'
+
+        return str
+
 
     #prints state of cube --- needs to be fixes for piece representation
-    # def printState(self):
-    #     u = self.upper
-    #     r = self.right
-    #     l = self.left
-    #     b = self.back
-    #     f = self.front
-    #     d = self.downer
-    #     print("     ", u[0], u[1], u[2])
-    #     print("     ", u[7], u[8], u[3])
-    #     print("     ", u[6], u[5], u[4])
-    #     print(l[0],l[1],l[2],f[0],f[1],f[2],r[0],r[1],r[2],b[0],b[1],b[2])
-    #     print(l[7],l[8],l[3],f[7],f[8],f[3],r[7],r[8],r[3],b[7],b[8],b[3])
-    #     print(l[6],l[5],l[4],f[6],f[5],f[4],r[6],r[5],r[4],b[6],b[5],b[4])
-    #     print("     ", d[0],d[1],d[2])
-    #     print("     ", d[7],d[8],d[3])
-    #     print("     ", d[6],d[5],d[4], "\n")
-    #     return
+    def printState(self):
+        print(self.getFaceColor(z = 1))
+        print(self.getFaceColor(x = -1))
+        print(self.getFaceColor(y = -1))
+        print(self.getFaceColor(x = 1))
+        print(self.getFaceColor(y = 1))
+        print(self.getFaceColor(z = -1))
+        return

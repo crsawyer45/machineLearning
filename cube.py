@@ -22,7 +22,9 @@ class Cube:
             self.solved = False
             self.pieces = pieceList
         self.moves = []
-        self.turnOptions = ["B","B'","F","F'","R","R'","L","L'","D","D'","U","U'"]
+        # self.turnOptions = ["B","B'","F","F'","R","R'","L","L'","D","D'","U","U'"]
+        self.turnOptions = ["B","B'","D","D'","F","F'","L","L'","R","R'","U","U'"]
+        self.encoder = OneHotEncoder(categories= [self.turnOptions])
 
     #turn the back face of the cube
     def __B(self):
@@ -55,7 +57,7 @@ class Cube:
     def __Fp(self):
         #rotate piece representation
         for piece in self.pieces:
-            if(piece.pos[1] == 1):
+            if(piece.pos[1] == -1):
                 piece.rotate(constants.rotYi, "y")
         self.moves.append("F'")
         return

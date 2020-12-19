@@ -6,17 +6,6 @@ import numpy as np
 
 optimalMoves = {}
 
-# def createMoves(cube, moveCount):
-#     for i in range(12):
-#         newCube = copy.deepcopy(cube)
-#         newCube.integerTurn(i)
-#         state = str(newCube.getVectorStateOfCrossPieces())
-#         if(state not in optimalMoves):
-#             optimalMoves[state] = (moveCount, newCube.encoder.fit_transform(turnOptions[i]).toarray()[0])
-#         elif(state in optimalMoves and optimalMoves[state][0] > moveCount):
-#             optimalMoves[state] = (moveCount, newCube.encoder.fit_transform(turnOptions[i]).toarray()[0])
-#     return
-
 def recursiveGeneration(cube, prev, moveCount, max):
     if(moveCount > max):
         return
@@ -53,19 +42,3 @@ def createFirstSevenMoves():
     return
 
 createFirstSevenMoves()
-# def createFirstEightMoves():
-#     lines = readListsFromFile("optimalMovesCross7.json")
-#     list = []
-#     tuples = []
-#     for i in range(0, len(lines), 2):
-#         state = convertStringToList(lines[i])
-#         properties = convertStringToTuple(lines[i+1])
-#         list.append(state)
-#         tuples.append(properties)
-#
-#     for i in range(len(tuples)):
-#         if tuples[i][0] == 7:
-#             createMoves(list[i])
-#     print(list)
-#     print(tuple)
-#     i = 0

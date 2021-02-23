@@ -22,9 +22,34 @@ class Cube:
             self.solved = False
             self.pieces = pieceList
         self.moves = []
-        # self.turnOptions = ["B","B'","F","F'","R","R'","L","L'","D","D'","U","U'"]
         self.turnOptions = ["B","B'","D","D'","F","F'","L","L'","R","R'","U","U'"]
         self.encoder = OneHotEncoder(categories= [self.turnOptions])
+        self.categories = [['B','G','O','R','W','Y'] for i in range(24)]
+        self.colorEncoder = OneHotEncoder(categories= self.categories)
+        self.firstLayerAlgorithms = [
+            ["B", "U", "B'"],
+            ["B'", "U'", "B"],
+            ["F", "U", "F'"],
+            ["F'", "U'", "F"],
+            ["L", "U", "L'"],
+            ["L'", "U'", "L"],
+            ["R", "U", "R'"],
+            ["R'", "U'", "R"],
+            ["U"],
+            ["U'"]
+        ]
+        self.secondLayerAlgorithms = [
+            ["U"],
+            ["U", "B", "U'", "B'", "U'", "R'", "U", "R"],
+            ["U", "F", "U'", "F'", "U'", "L'", "U", "L"],
+            ["U", "L", "U'", "L'", "U'", "B'", "U", "B"],
+            ["U", "R", "U'", "R'", "U'", "F'", "U", "F"],
+            ["U'"],
+            ["U'", "B'", "U", "B", "U", "L", "U'", "L'"],
+            ["U'", "F'", "U", "F", "U", "R", "U'", "R'"],
+            ["U'", "L'", "U", "L", "U", "F", "U'", "F'"],
+            ["U'", "R'", "U", "R", "U", "B", "U'", "B'"]
+        ]
 
     #turn the back face of the cube
     def __B(self):
@@ -177,35 +202,22 @@ class Cube:
                 print("bad sequence list command: ", i)
         return
 
-    #returns the state of the cube in a big one-hot vector
-    # def getVectorState(self):
-    #     state = self.back + self.front + self.right + self.left + self.downer + self.upper
-    #     state = np.array(state).reshape(1,-1)
-    #     state = self.encoder.fit_transform(state).toarray()
-    #     return state[0]
-
-    # def getVectorStateOfEdgePieces(self):
-    #     state = self.back + self.front + self.right + self.left + self.downer + self.upper
-    #     edges = []
-    #     for i in range(len(state)):
-    #         if(i % 9 in [1,3,5,7]):
-    #             edges += state[i]
-    #     edges = np.array(state).reshape(1,-1)
-    #     edges = self.encoder.fit_transform(edges).toarray()
-    #     return edges[0]
-
-    def getVectorStateOfCrossPieces(self):
-        cross = []
-        for piece in self.pieces:
-            #can use piece type or piece id here, not sure which makes more sense
-            if(piece.type == "edge" and "W" in piece.colors):
-                cross.extend(list(piece.pos))
-                for i in piece.colors:
-                    if i == "W":
-                        cross.append(1)
-                    else:
-                        cross.append(0.)
-        return (np.array(cross).reshape(1,-1)[0]).tolist()
+    # gets the state of the edges pieces in a one hot vector
+    def getVectorStateOfEdgePieces(self):
+        edges = []
+        for z in range(-1, 2):
+            for y in range(-1, 2):
+                for x in range(-1, 2):
+                    if x+y+z == -2 or x+y+z == 2 or x+y+z == 0:
+                        if not (x == 0 and y == 0 and z == 0):
+                            edges.append(self.getColor(x, y, z, 0))
+                            edges.append(self.getColor(x, y, z, 1))
+                            edges.append(self.getColor(x, y, z, 2))
+        for i in range(12):
+            edges.remove(None)
+        # print(edges)
+        edges = np.array(edges).reshape(1,-1)
+        return self.colorEncoder.fit_transform(edges).toarray()[0]
 
     #turns the cube given a one-hot vector of the 12 turns
     def vectorTurn(self, turn):
@@ -226,14 +238,28 @@ class Cube:
     #returns the number of cross pieces in the correct place (max 4)
     def getNumberOfCrossPiecesSolved(self):
         num = 0
-        for piece in pieces:
-            if piece.pos == np.array([-1,0,-1]) and piece.colors == ["R", None, "W"]:
+        for piece in self.pieces:
+            if piece.pos.tolist() == [-1,0,-1] and piece.colors == ["R", None, "W"]:
                 num += 1
-            elif piece.pos == np.array([0,-1,-1]) and piece.colors == [None, "G", "W"]:
+            elif piece.pos.tolist() == [0,-1,-1] and piece.colors == [None, "G", "W"]:
                 num += 1
-            elif piece.pos == np.array([0,1,-1]) and piece.colors == ["O", None, "W"]:
+            elif piece.pos.tolist() == [1,0,-1] and piece.colors == ["O", None, "W"]:
                 num += 1
-            elif piece.pos == np.array([1,0,-1]) and piece.colors == [None, "B", "W"]:
+            elif piece.pos.tolist() == [0,1,-1] and piece.colors == [None, "B", "W"]:
+                num += 1
+        return num
+
+    #returns the number of first layer corner pieces in the correct place (max 4)
+    def getNumberOfCornerPiecesSolved(self):
+        num = 0
+        for piece in self.pieces:
+            if piece.pos.tolist() == [-1,-1,-1] and piece.colors == ["R", "G", "W"]:
+                num += 1
+            elif piece.pos.tolist() == [-1,1,-1] and piece.colors == ["R", "B", "W"]:
+                num += 1
+            elif piece.pos.tolist() == [1,-1,-1] and piece.colors == ["O", "G", "W"]:
+                num += 1
+            elif piece.pos.tolist() == [1,1,-1] and piece.colors == ["O", "B", "W"]:
                 num += 1
         return num
 
@@ -244,6 +270,7 @@ class Cube:
             random.seed(i)
             seq.append(random.choice(self.turnOptions))
         self.turnCube(seq)
+        self.moves = []
         return
 
     # returns the color of a piece at a given position with a given face
@@ -251,6 +278,49 @@ class Cube:
         for piece in self.pieces:
             if piece.pos[0] == x and piece.pos[1] == y and piece.pos[2] == z:
                 return piece.colors[face]
+
+    #returns the state of the cube in a big one-hot vector
+    def getVectorState(self):
+        state = [] #back, downer, front, left, right, upper
+        #back
+        for z in range(1, -2, -1):
+            for x in range(1, -2, -1):
+                state.append(self.getColor(x, 1, z, 1))
+        #downer
+        for y in range(-1, 2, 1):
+            for x in range(-1, 2, 1):
+                state.append(self.getColor(x, y, -1, 2))
+        #front
+        for z in range(1, -2, -1):
+            for x in range(-1, 2, 1):
+                state.append(self.getColor(x, -1, z, 1))
+        #left
+        for z in range(1, -2, -1):
+            for y in range(1, -2, -1):
+                state.append(self.getColor(-1, y, z, 0))
+        #right
+        for z in range(1, -2, -1):
+            for y in range(-1, 2, 1):
+                state.append(self.getColor(1, y, z, 0))
+        #upper
+        for y in range(1, -2, -1):
+            for x in range(-1, 2, 1):
+                state.append(self.getColor(x, y, 1, 2))
+        state = np.array(state).reshape(1,-1)
+        state = self.colorEncoder.fit_transform(state).toarray()
+        return state[0]
+
+    def getVectorStateOfCornerPieces(self):
+        state = []
+        for x in range(-1, 2, 2):
+            for y in range(-1, 2, 2):
+                for z in range(-1, 2, 2):
+                    for dim in range(3):
+                        state.append(self.getColor(x, y, z, dim))
+        state = np.array(state).reshape(1, -1)
+        state = self.colorEncoder.fit_transform(state).toarray()
+        return state[0]
+
 
     # returns the colors of a face in a string...not great but will do for now
     def getFaceColor(self, x = None, y = None, z = None):
@@ -294,7 +364,7 @@ class Cube:
         return str
 
 
-    #prints state of cube --- needs to be fixes for piece representation
+    #prints state of cube --- needs to be fixed for piece representation
     def printState(self):
         print(self.getFaceColor(z = 1))
         print(self.getFaceColor(x = -1))

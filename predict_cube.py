@@ -7,18 +7,18 @@ from collections import deque
 
 cube = Cube()
 # create model
-solvedState = cube.getVectorStateOfEdgePieces()
+solvedState = cube.getVectorStateOfCornerPieces()
 n_inputs = len(solvedState)
 model = keras.models.Sequential()
 model.add(Dense(100, activation="relu", input_shape=[n_inputs]))
 model.add(Dense(100, activation="relu"))
 model.add(Dense(100, activation="relu"))
-model.add(Dense(12, activation="softmax"))
+model.add(Dense(10, activation="softmax"))
 
 
 def epsilonGreedyPolicy(state, epsilon=0):
     if np.random.rand() < epsilon:
-        return np.random.randint(12)
+        return np.random.randint(10)
     else:
         Q_values = model.predict(state[np.newaxis])
         return np.argmax(Q_values[0])
@@ -35,10 +35,10 @@ def sampleExperiences(batch_size):
 
 def playOneStep(cube, state, epsilon):
     action = epsilonGreedyPolicy(state, epsilon)
-    cube.integerTurn(action)
-    next_state = cube.getVectorStateOfEdgePieces()
-    reward = 10.0 * cube.getNumberOfCrossPiecesSolved() - 1.0
-    done = (cube.getNumberOfCrossPiecesSolved() == 4)
+    cube.turnCube(cube.firstLayerAlgorithms[action])
+    next_state = cube.getVectorStateOfCornerPieces()
+    reward = cube.getNumberOfCornerPiecesSolved()
+    done = (cube.getNumberOfCornerPiecesSolved() == 4)
     replay_buffer.append((state, action, reward, next_state, done))
     return next_state, reward, done
 
@@ -56,7 +56,7 @@ def training_step(batch_size):
     next_Q_values =  model.predict(next_states)
     max_next_Q_values = np.max(next_Q_values, axis=1)
     target_Q_values = (rewards + (1 - dones) * discount_factor * max_next_Q_values)
-    mask = tf.one_hot(actions, 12)
+    mask = tf.one_hot(actions, 10)
     with tf.GradientTape() as tape:
         all_Q_values = model(states)
         Q_values = tf.reduce_sum(all_Q_values * mask, axis=1, keepdims=True)
@@ -65,13 +65,13 @@ def training_step(batch_size):
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
 episode_maxes = []
-for episode in range(450):
+for episode in range(1200):
     cube = Cube()
     cube.mix()
-    obs = cube.getVectorState()
+    obs = cube.getVectorStateOfCornerPieces()
     max_reward = -100
-    for step in range(100):
-        epsilon = max(1 - episode / 375.0, 0.01)
+    for step in range(4):
+        epsilon = max(1 - episode / 1000, 0.01)
         obs, reward, done = playOneStep(cube, obs, epsilon)
         max_reward = max(max_reward, reward)
         if done:
@@ -80,6 +80,7 @@ for episode in range(450):
     if episode > 50:
         training_step(batch_size)
     episode_maxes.append(max_reward)
-    print("episode finished: ", episode)
-model.save_weights("cross_weights.h5")
-print(episode_maxes)
+    if episode % 100 == 99:
+        print("episode finished: ", episode)
+model.save_weights("corner_weights.h5")
+print(episode_maxes[-100:-1])

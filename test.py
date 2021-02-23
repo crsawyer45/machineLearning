@@ -1,8 +1,10 @@
 from cube import Cube
 
 cube1 = Cube()
-print(cube1.getVectorStateOfCrossPieces())
-cube1.turnCube(["R"])
+# print(cube1.getNumberOfCrossPiecesSolved())
+# print(cube1.getVectorStateOfCrossPieces())
+# cube1.turnCube(["R"])
+# print(cube1.getVectorStateOfCornerPieces())
 # cube1.turnCube(["R'"])
 # cube1.turnCube(["L"])
 # cube1.turnCube(["L'"])
@@ -20,4 +22,4 @@ cube1.turnCube(["R"])
 # cube2.mix()
 # cube2.printState()
 
-print(cube1.getVectorStateOfCrossPieces())
+print(cube1.getVectorStateOfEdgePieces())

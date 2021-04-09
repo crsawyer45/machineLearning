@@ -1,84 +1,45 @@
+import cubeConstants
 from cube import Cube
 import json
 import copy
-import utils
 import numpy as np
 
-optimalMoves = {}
-newMoves = {}
 
-def generateMoves(cube, moves, moveCount):
-    for i in range(12):
-        newCube = copy.deepcopy(cube)
-        newCube.integerTurn(i)
-        state = str(newCube.getVectorStateOfCrossPieces().tolist())
-        moveToEncode = np.array(newCube.turnOptions[i]).reshape(1,-1)
-        if(state not in moves and state not in newMoves):
-            newMoves[state] = (moveCount, list(newCube.encoder.fit_transform(moveToEncode).toarray()[0]))
-        elif(state in moves and moves[state][0] > moveCount):
-            print("hit error")
-            moves[state] = (moveCount, list(newCube.encoder.fit_transform(moveToEncode).toarray()[0]))
-    return
-
-def recursiveGeneration(cube, prev, moveCount, max):
-    if(moveCount > max):
-        return
-    for i in range(12):
-        if(i % 2 == 0 and prev == i + 1):
-            continue
-        if(i % 2 == 1 and prev == i - 1):
-            continue
-
-        newCube = copy.deepcopy(cube)
-        newCube.integerTurn(i)
-        state = str(newCube.getVectorStateOfCrossPieces())
-        moveToEncode = np.array(newCube.turnOptions[i]).reshape(1,-1)
-
-        if(state not in optimalMoves):
-            optimalMoves[state] = (
-                moveCount, list(newCube.encoder.fit_transform(moveToEncode).toarray()[0]))
-        elif(state in optimalMoves and optimalMoves[state][0] > moveCount):
-            optimalMoves[state] = (
-                moveCount, list(newCube.encoder.fit_transform(moveToEncode).toarray()[0]))
-
-        recursiveGeneration(newCube, i, moveCount + 1, max)
-
-    if(moveCount == 4):
-        print("Branch at level 3 complete: ", i)
-
-# create the all first seven possible moves and determine their optimal move back to solved
-def createFirstSevenMoves():
+def run():
+    cubeDict = {}
     cube = Cube()
-    recursiveGeneration(cube, -1, 1, 7)
-    output = open("optimalMovesCross7.json", "w", encoding='utf8')
-    str = json.dumps(optimalMoves, indent=4)
-    output.write(str)
+    cubeDict[0] = [cube]
+    masterMoveDict = generateMoves(cubeDict, {}, 9, 1)
+    file = open('crossMoves.json', "w", encoding="utf8")
+    string = json.dumps(masterMoveDict, indent=4)
+    file.write(string)
     return
 
-# create the first eight possible moves using known first seven moves
-def createOneAdditionalMove(startingMoveCount, input, output):
-    dict = json.loads(open(input).read())
-    print(len(dict))
-    count = 0
-    for i in dict:
-        if dict[i][0] == startingMoveCount:
-            count += 1
-            cube = Cube(utils.makePiecesFromCrossStateString(i))
-            generateMoves(cube, dict, startingMoveCount + 1)
-    file = open(output, "w", encoding="utf8")
-    str = json.dumps(newMoves, indent=4)
-    file.write(str)
-    return
 
-# createOneAdditionalMove(8, "allMoves.json", "ninthMove.json")
-#
-# dict1 = json.loads(open("allMoves.json").read())
-# dict2 = json.loads(open("ninthMove.json").read())
-#
-# dict3 = {**dict1, **dict2}
-# file = open("allMovesFinal.json", "w", encoding="utf8")
-# str = json.dumps(dict3, indent=4)
-# file.write(str)
+def generateMoves(cubeDict, moveDict, movesToGenerate, moveCount):
+    if moveCount > movesToGenerate:
+        return moveDict
+    else:
+        cubeDict[moveCount] = []
+        for cube in cubeDict[moveCount - 1]:
+            for i in range(12):
+                newCube = copy.deepcopy(cube)
+                newCube.integerTurn(i)
+                state = str(newCube.getVectorStateOfCrossPieces())
 
-dict = json.loads(open("allCrossMoves.json").read())
-print(len(dict))
+                # determine the move needed to undo the rotation that was just made
+                if i % 2 == 0:
+                    moveToEncode = np.array(cubeConstants.turnOptions[i+1]).reshape(1, -1)
+                else:
+                    moveToEncode = np.array(cubeConstants.turnOptions[i-1]).reshape(1, -1)
+
+                # if the new state of the cube is not in the dict, add it and the turn needed to undo it
+                if state not in moveDict:
+                    moveDict[state] = list(cubeConstants.turnEncoder.fit_transform(moveToEncode).toarray()[0])
+                    cubeDict[moveCount].append(newCube)
+        print('Move Completed: ', moveCount)
+        return generateMoves(cubeDict, moveDict, movesToGenerate, moveCount+1)
+
+
+if __name__ == "__main__":
+    run()

@@ -8,6 +8,7 @@ def readListsFromFile(file):
     data = file.readlines()
     return data
 
+
 def convertStringToList(string):
     string = re.sub(',', '', string)
     string = re.sub('\[', '', string)
@@ -18,6 +19,7 @@ def convertStringToList(string):
         list.append(int(float(i)))
     return list
 
+
 def convertStringToTuple(string):
     string = re.sub(',', '', string)
     string = re.sub('\(', '', string)
@@ -26,6 +28,7 @@ def convertStringToTuple(string):
     for i in range(len(values)):
         values[i] = int(values[i])
     return tuple(values)
+
 
 def makePiecesFromCrossStateString(string):
     state = convertStringToList(string)
